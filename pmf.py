@@ -1,14 +1,15 @@
-def dice_pmf():
-    return {i: 1/6 for i in range(1, 7)}
+# Given data
+total_population = 1000  # Total number of people
+medicine_x_users = 300   # People using Medicine X
+medicine_y_users = 400   # People using Medicine Y
 
-print(dice_pmf())
+# Assuming no one takes both medicines
+people_not_using_any = total_population - (medicine_x_users + medicine_y_users)
 
-def dice_cmf():
-    return {i: i/6 for i in range(1, 7)}
+# Compute PMF
+pmf_no_medicine = people_not_using_any / total_population
 
-print(dice_cmf())
-
-def dice_pdf():
-    return {i: 1/6 for i in range(1, 7)}
-
-print(dice_pdf())
+# Print results
+print(f"Total Population: {total_population}")
+print(f"People who did not use any medicine: {people_not_using_any}")
+print(f"PMF for not using either medicine: {pmf_no_medicine:.2f} ({pmf_no_medicine * 100:.2f}%)")
