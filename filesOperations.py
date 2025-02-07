@@ -27,14 +27,14 @@ with open("example.txt", 'r') as file:
     print(partial_content)
 with open("example.txt", "a") as file:
     file.write("\nappending new data")
-    print("example.txt")
 # a ensures the existing content is not deleted 
 
 # writing an image 
-
+# Writing an image
 with open("img.jpg", "rb") as file:
     data = file.read()
 
-with open("img.jpg", "wb") as file:
+with open("copy.jpg", "wb") as file:
     file.write(data)
-    
+
+
