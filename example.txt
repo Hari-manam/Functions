@@ -1,3 +1,0 @@
-hello, python
-file handling is fun
-appending new data
