@@ -1,0 +1,56 @@
+import pandas as pd 
+
+
+# I got the dirt csv file I will do file operations on that file using pandas
+# loading the csv file in to data frame
+df= pd.read_csv(r"C:\Users\nanim\OneDrive\Desktop\Datasets\Data of employees.csv")
+
+
+#will convert the "Age" column into a numeric type, replacing non-numeric values (like "Unknown") with NaN.
+
+df["Age"] = pd.to_numeric(df["Age"], errors='coerce')
+print(df["Age"].head())
+
+# the dates in the join_date is datetime format for proper processing
+df['Join_Date'] = pd.to_datetime(df['Join_Date'], errors='coerce')
+print(df['Join_Date'].head())
+
+#handle missing values
+df['Employment_Type']= df['Employment_Type'].fillna('Unknown')
+print(df['Employment_Type'].head())
+print(df["Employment_Type"].head(99))
+
+# convert ID to integer
+df['ID'] = pd.to_numeric(df['ID'], errors='coerce')
+print(df['ID'].head())
+
+#Check and remove any duplicate records
+
+df = df.drop_duplicates()
+print(f"total rows after removing duplicates: {df.shape[0]} ")
+
+# fill missing ids
+# Fill missing ID using interpolation
+df['ID'] = df['ID'].interpolate().bfill().astype(int)
+
+# Fill missing Age with median
+df['Age'] = df['Age'].fillna(df['Age'].median())
+
+# Fill missing Join_Date with a default date
+df['Join_Date'] = df['Join_Date'].fillna(pd.to_datetime("2000-01-01"))
+
+# Filter by multiple Values
+df[df["Employment_Type"].isin(["Full-time", "Part-time"])]
+
+
+# handle missing values
+df.fillna(0)
+df.fillna(df.mean())
+df.dropna()
+df.dropna(subset=['column_name'])
+
+# Handle duplicates
+df.duplicated() # check for duplicates
+df.drop_duplicates() # Remove duplicate rows
+
+
