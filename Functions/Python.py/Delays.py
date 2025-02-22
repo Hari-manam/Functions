@@ -55,8 +55,9 @@ similar_orders = np.argsort(-similarity_matrix[random_order_index])[:5]  # Top 5
 selected_order = df.iloc[random_order_index]
 similar_orders_df = df.iloc[similar_orders]
 
-import ace_tools as tools
-tools.display_dataframe_to_user(name="Order Delay Analysis with PDF and Vectors", dataframe=similar_orders_df)
+# 🔴 Removed `import ace_tools as tools`
+# 🔴 Removed `tools.display_dataframe_to_user()`, replaced with standard Pandas display:
+print("\n🔹 Top 5 Similar Orders Based on Delay Patterns:\n", similar_orders_df)
 
 # Step 5: Plot PDF for delays
 plt.figure(figsize=(8, 5))
