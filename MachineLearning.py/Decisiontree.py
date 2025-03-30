@@ -1,33 +1,62 @@
+# Decision Tree Visualization and Accuracy Calculation for Stroke Dataset
+
+# Importing necessary libraries
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import cross_val_score
 
-# Define dataset
-study_hours = np.array([6, 3, 1, 5, 2])  # X-axis
-attendance = np.array([1, 1, 0, 0, 0])  # Y-axis (1 = Yes, 0 = No)
-labels = np.array(["Pass", "Pass", "Fail", "Pass", "Fail"])  # Outcomes
+# Load dataset
+data = pd.read_csv(r'C:\Users\nanim\OneDrive\Desktop\Datasets\healthcare-dataset-stroke-data.csv')
 
-# Create a scatter plot
-plt.figure(figsize=(8,6))
+# Data preprocessing
+# Drop rows with missing values
+data = data.dropna()
 
-# Plot each student as a point
-for i in range(len(study_hours)):
-    color = "green" if labels[i] == "Pass" else "red"
-    plt.scatter(study_hours[i], attendance[i], color=color, s=200, edgecolors="black", label=labels[i] if labels[i] not in plt.gca().get_legend_handles_labels()[1] else "")
+# Encoding categorical features
+categorical_columns = ['gender', 'ever_married', 'work_type', 'Residence_type', 'smoking_status']
+label_encoders = {}
+for col in categorical_columns:
+    le = LabelEncoder()
+    data[col] = le.fit_transform(data[col])
+    label_encoders[col] = le
 
-# Draw the first decision boundary: Study Hours = 3
-plt.axvline(x=3, color="blue", linestyle="--", linewidth=2, label="Study Hours = 3 (Decision Boundary)")
+# Selecting two features for visualization
+X_features = ['age', 'avg_glucose_level']
 
-# Annotate the decision rule
-plt.text(3.2, 0.5, "Study Hours > 3?", color="blue", fontsize=12, rotation=90, verticalalignment='center')
+# Defining features and target
+X = data[X_features]
+y = data['stroke']
 
-# Add labels
-plt.xlabel("Study Hours")
-plt.ylabel("Attendance (1 = Yes, 0 = No)")
-plt.title("Decision Tree Split for Pass/Fail Prediction")
+# Decision Tree Classifier
+clf = DecisionTreeClassifier(random_state=42)
 
-# Legend
+# Cross-validation to calculate accuracy scores
+cv_scores = cross_val_score(clf, X, y, cv=5, scoring='accuracy')
+average_accuracy = np.mean(cv_scores)
+
+print("Cross-validation scores:", cv_scores)
+print(f"Average accuracy: {average_accuracy:.2f}")
+
+# Visualization
+labels = np.where(y == 1, 'Stroke', 'No Stroke')
+
+plt.figure(figsize=(10, 7))
+for i in range(len(X)):
+    color = 'red' if labels[i] == 'Stroke' else 'green'
+    plt.scatter(X.iloc[i, 0], X.iloc[i, 1], color=color, s=50, edgecolors='black', alpha=0.7,
+                label=labels[i] if labels[i] not in plt.gca().get_legend_handles_labels()[1] else "")
+
+boundary_age = 60
+plt.axvline(x=boundary_age, color="blue", linestyle="--", linewidth=2, label=f"Age = {boundary_age} (Decision Boundary)")
+plt.text(boundary_age + 1, max(X.iloc[:, 1])*0.7, f"Age > {boundary_age}?", color="blue", fontsize=12, rotation=90, verticalalignment='center')
+
+plt.xlabel("Age")
+plt.ylabel("Average Glucose Level")
+plt.title("Decision Tree Split for Stroke Prediction")
 plt.legend()
 plt.grid(True)
 
-# Show the plot
 plt.show()
