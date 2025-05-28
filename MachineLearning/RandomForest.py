@@ -11,6 +11,7 @@ from sklearn.preprocessing import LabelEncoder
 # Load dataset
 data = pd.read_csv(r'C:\Users\nanim\OneDrive\Desktop\Datasets\healthcare-dataset-stroke-data.csv')
 
+
 # Data preprocessing
 # Drop rows with missing values
 data = data.dropna()

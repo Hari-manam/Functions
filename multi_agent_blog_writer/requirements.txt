@@ -1,0 +1,6 @@
+# Basic requirements for the multi-agent blog writer
+# Add any specific dependencies here if needed in the future
+transformers
+huggingface_hub
+python-dotenv
+streamlit
