@@ -2,12 +2,11 @@ import streamlit as st
 from qdrant_client import QdrantClient
 import os
 from dotenv import load_dotenv
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
 load_dotenv()
 
-st.title("🔍 RAG Chatbot with Qdrant + Zephyr")
+st.title("🔍 RAG Chatbot with Qdrant + Flan-T5")
 
 # 🔗 Qdrant connection and debug info
 try:
@@ -16,7 +15,7 @@ try:
         api_key=os.getenv("QDRANT_API_KEY")
     )
     info = client.get_collection("rag_collection")
-    st.success("✅ Successfully connected to Qdrant and fetched collection!")
+    st.success("✅ Connected to Qdrant!")
     st.json(info.model_dump())
     st.markdown("---")
 except Exception as e:
@@ -31,19 +30,18 @@ if st.button("Get Answer"):
     if user_query.strip() == "":
         st.warning("Please enter a question.")
     else:
-        st.write("🧠 Generating answer with Zephyr...")
+        st.write("🧠 Generating answer...")
 
-        # Load Zephyr model
-        model_id = "HuggingFaceH4/zephyr-7b-beta"
+        # ✅ Use a smaller model that works on Streamlit
+        model_id = "google/flan-t5-base"
         tokenizer = AutoTokenizer.from_pretrained(model_id)
-        model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype=torch.float16).to("cuda")
+        model = AutoModelForSeq2SeqLM.from_pretrained(model_id)
 
-        # Prompt structure
-        prompt = f"<|user|>\n{user_query}\n<|assistant|>\n"
-        input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(model.device)
-        outputs = model.generate(input_ids, max_new_tokens=100, do_sample=True)
+        # Format input & generate
+        input_ids = tokenizer(user_query, return_tensors="pt").input_ids
+        outputs = model.generate(input_ids, max_new_tokens=100)
         response = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-        # Display response
+        # Display
         st.success("✅ Answer:")
-        st.write(response.split("<|assistant|>\n")[-1].strip())
+        st.write(response.strip())
