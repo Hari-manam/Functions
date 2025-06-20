@@ -7,4 +7,4 @@ watchdog==3.0.0
 pdfplumber==0.9.0
 pandas==2.0.3
 Pillow==9.4.0
-huggingface-hub==0.21.4
+requests
