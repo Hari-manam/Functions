@@ -1,14 +1,15 @@
 import streamlit as st
 from qdrant_client import QdrantClient
-from sentence_transformers import SentenceTransformer
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-import torch
+from qdrant_client.http.models import Filter, FieldCondition, MatchValue, SearchParams
 import os
 from dotenv import load_dotenv
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
 
+# Load environment variables
 load_dotenv()
 
-st.title("🔍 RAG Chatbot with Qdrant + Flan-T5")
+st.title("🔍 RAG Chatbot with Qdrant + Falcon-RW-1B")
 
 # Step 1: Connect to Qdrant
 try:
@@ -22,45 +23,63 @@ try:
 except Exception as e:
     st.error("❌ Qdrant connection failed!")
     st.text(str(e))
+    st.stop()
 
 st.markdown("---")
 
-# Step 2: Input box
-user_query = st.text_input("Ask your question:")
+# Step 2: Load Falcon-RW-1B model and tokenizer
+@st.cache_resource
+def load_falcon():
+    model_id = "tiiuae/falcon-rw-1b"
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    model = AutoModelForCausalLM.from_pretrained(model_id)
+    return tokenizer, model
+
+tokenizer, model = load_falcon()
+
+# Step 3: User Input
+user_query = st.text_input("💬 Ask a question:")
 
 if st.button("Get Answer"):
-    if user_query.strip() == "":
-        st.warning("Please enter a question.")
-    else:
-        st.write("📥 Retrieving relevant context...")
+    if not user_query.strip():
+        st.warning("Please enter a valid question.")
+        st.stop()
 
-        # Step 3: Load embedding model and get query vector
-        embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
-        query_vector = embedding_model.encode(user_query).tolist()
+    # Step 4: Embed user query using a placeholder (since we don't embed here)
+    # For real RAG, embed and search vector DB — simplified for now
+    st.write("📥 Retrieving relevant context...")
 
-        # Step 4: Retrieve top-k documents from Qdrant
-        search_result = client.search(
-            collection_name="rag_collection",
-            query_vector=query_vector,
-            limit=3
-        )
+    search_result = client.search(
+        collection_name="rag_collection",
+        query_vector=tokenizer(user_query, return_tensors="pt").input_ids[0].tolist(),
+        limit=3,
+        search_params=SearchParams(hnsw_ef=128, exact=False)
+    )
 
-        context = "\n".join([hit.payload.get("text", "") for hit in search_result])
-        st.write("🧠 Retrieved context:")
-        st.info(context)
+    context_chunks = [hit.payload.get("text", "") for hit in search_result]
+    context = "\n".join(context_chunks)
 
-        # Step 5: Load FLAN-T5 model
-        st.write("💬 Generating answer...")
-        model_id = "google/flan-t5-base"
-        tokenizer = AutoTokenizer.from_pretrained(model_id)
-        model = AutoModelForSeq2SeqLM.from_pretrained(model_id)
+    if not context:
+        st.warning("No relevant context found. Answering directly...")
+        context = "No context available."
 
-        # Step 6: Format prompt with context
-        prompt = f"Context:\n{context}\n\nQuestion: {user_query}\nAnswer:"
-        input_ids = tokenizer(prompt, return_tensors="pt").input_ids
-        outputs = model.generate(input_ids, max_new_tokens=150)
-        response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    # Step 5: Build Prompt
+    prompt = f"""You are a helpful AI assistant. Use the context to answer the question.
 
-        # Step 7: Display
-        st.success("✅ Answer:")
-        st.write(response.strip())
+Context:
+{context}
+
+Question:
+{user_query}
+
+Answer:"""
+
+    # Step 6: Generate Answer
+    st.write("🧠 Generating answer using Falcon-RW-1B...")
+    input_ids = tokenizer(prompt, return_tensors="pt").input_ids
+    outputs = model.generate(input_ids, max_new_tokens=150)
+    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+    # Step 7: Show Answer
+    st.success("✅ Answer:")
+    st.write(response.split("Answer:")[-1].strip())
