@@ -61,4 +61,71 @@ Summary (In Simple Words)
 
 All do this to make it easier for AI to understand and generate language — even if it’s new, rare, or misspelled.
 
+# 🔤 Tokenization in Transformers – Simple Guide
+
+Transformers work with numbers, not raw text. **Tokenization** is the process of converting text into **tokens** that can be fed into a model.
+
+---
+
+What is a Token?
+
+A **token** is a small chunk of text. It can be:
+- A word
+- A subword
+- A character
+- A byte
+
+
+How Tokenization Works
+
+1. Text: `"Transformers are powerful."`
+2. Tokenized: `["Transform", "ers", " are", " powerful", "."]`
+3. Token IDs: `[1012, 3421, 2011, 4021, 102]`
+
+These token IDs are what the model actually sees.
+
+---
+
+Tokenizer Types and Models
+
+| Model / Platform        | Tokenizer Type            | Tool / Library         | Description                                                      |
+|-------------------------|---------------------------|------------------------|------------------------------------------------------------------|
+| **Hugging Face**        | BPE, WordPiece, Unigram   | `transformers`, `tokenizers` | Supports multiple tokenizers for flexibility                     |
+| **ChatGPT (OpenAI GPT)**| Byte-level BPE            | `tiktoken`             | Breaks input into bytes → subwords; good with emojis, UTF-8      |
+| **Gemini (Google)**     | SentencePiece + Unigram   | Internal tools         | Based on PaLM models; likely uses Unigram + custom tweaks        |
+| **T5 (Google)**         | SentencePiece + Unigram   | `sentencepiece`        | Learns best subwords using a probabilistic language model        |
+
+
+
+Common Tokenizer Types Explained
+
+| Tokenizer Type     | How It Works                                                           |
+|--------------------|------------------------------------------------------------------------|
+| **BPE (Byte Pair Encoding)** | Merges frequent character pairs into subwords                             |
+| **WordPiece**      | Similar to BPE, but uses a greedy strategy (used in BERT)              |
+| **Unigram LM**     | Picks best subword split using probability model                       |
+| **SentencePiece**  | Trains on raw text directly (no whitespace needed), uses BPE or Unigram|
+| **Byte-level BPE** | Converts text into UTF-8 bytes → subwords (GPT-2, GPT-4)               |
+
+---
+
+Example: Word = `"unbelievable"`
+
+| Tokenizer Type     | Output Tokens                      |
+|--------------------|------------------------------------|
+| **BPE**            | `["un", "believ", "able"]`         |
+| **WordPiece**      | `["un", "##believable"]`           |
+| **Unigram LM**     | `["unbelievable"]` or `["un", "believ", "able"]` |
+| **Byte-level BPE** | `["u", "n", "b", "el", "ie", "v", "able"]` (byte subwords) |
+
+---
+
+Why It Matters
+
+- **Smaller vocabulary** → less memory
+- **Handles rare words** → better generalization
+- **Consistent across languages** → works with any UTF-8 text
+
+---
+
 

@@ -1,3 +1,15 @@
 python-dotenv==1.0.0
-huggingface-hub==0.19.4
-requests==2.31.0 
+huggingface-hub
+requests
+sentence-transformers==2.2.2
+watchdog==3.0.0
+pdfplumber==0.9.0
+pandas==2.0.3
+Pillow==10.0.0
+python-docx==0.8.11
+qdrant-client==1.6.9
+pinecone==2.2.4
+weaviate-client>=3.26.7,<4.0.0
+pymilvus
+redis==5.0.1
+numpy==1.24.3 

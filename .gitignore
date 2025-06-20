@@ -49,3 +49,6 @@ ENV/
 # Operating System Files
 .DS_Store
 Thumbs.db 
+
+.env
+.env.vectordb

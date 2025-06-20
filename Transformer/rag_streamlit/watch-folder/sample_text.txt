@@ -1,0 +1,2 @@
+This is a test document for the RAG pipeline.
+It should be successfully embedded and upserted.
