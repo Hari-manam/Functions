@@ -1,24 +1,25 @@
-from huggingface_hub import InferenceClient
-from dotenv import load_dotenv
+import openai
 import os
 
-# Load env variables
-load_dotenv()
-HF_TOKEN = os.getenv("HF_TOKEN")
-HF_MODEL = os.getenv("HF_MODEL")
+openai.api_key = os.getenv("FIREWORKS_API_KEY")
+openai.base_url = "https://api.fireworks.ai/inference/v1/"
 
-# Initialize HF API Client
-client = InferenceClient(token=HF_TOKEN)
-
-# Generate answer using hosted model
 def generate_answer(context, question):
-    prompt = f"Context: {context}\nQuestion: {question}\nAnswer:"
-    
-    response = client.text_generation(
-        model=HF_MODEL,
-        prompt=prompt,
-        max_new_tokens=100,
-        temperature=0.7,
+    prompt = (
+        "You are a Supreme Court legal expert. Based on the following context and the user's question, provide a specific, context-grounded, and conclusive answer. "
+        "Do NOT provide generic legal frameworks or generalities. Always quote or reference the actual context provided, and synthesize a clear, practical conclusion. "
+        "If the context is silent or ambiguous, explain what can and cannot be inferred, and still provide your best legal conclusion based on the context and standard legal principles. "
+        "Use bullet points or a numbered list for key points, and always end with a clear, direct answer to the user's question.\n\n"
+        f"Context:\n{context}\n\n"
+        f"Question: {question}\n\n"
+        "Answer:"
     )
-
-    return response.strip()
+    client = openai.OpenAI(
+        api_key=openai.api_key,
+        base_url=openai.base_url
+    )
+    response = client.chat.completions.create(
+        model="accounts/fireworks/models/llama4-scout-instruct-basic",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return response.choices[0].message.content.strip()

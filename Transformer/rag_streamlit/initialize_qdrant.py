@@ -13,6 +13,9 @@ client = QdrantClient(
 
 COLLECTION_NAME = "rag_collection"
 
+def clear_collection():
+    client.delete(collection_name=COLLECTION_NAME, points_selector={"filter": {}})
+
 # 1. Create or recreate collection with embedding size 384 (MiniLM size)
 client.recreate_collection(
     collection_name=COLLECTION_NAME,
@@ -34,3 +37,7 @@ points = [{"id": i, "vector": vec, "payload": {"text": doc}} for i, (doc, vec) i
 client.upsert(collection_name=COLLECTION_NAME, points=points)
 
 print("✅ Qdrant collection created and sample documents uploaded.")
+
+if __name__ == "__main__":
+    clear_collection()
+    print(f"Cleared all points in collection: {COLLECTION_NAME}")
